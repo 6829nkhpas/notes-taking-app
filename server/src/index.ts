@@ -7,9 +7,9 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import env from './config/env';
 
-// Import routes (will create these next)
-// import authRoutes from './features/auth/auth.routes';
-// import notesRoutes from './features/notes/notes.routes';
+// Import routes
+import authRoutes from './features/auth/auth.routes';
+import notesRoutes from './features/notes/notes.routes';
 
 const app = express();
 
@@ -32,8 +32,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Routes
-// app.use('/api/auth', authRoutes);
-// app.use('/api/notes', notesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/notes', notesRoutes);
 
 // Error handler (must be last)
 app.use(errorHandler);
