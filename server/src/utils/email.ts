@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import env from '../config/env';
 
 // Create transporter (in dev, this will just log to console)
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: env.SMTP_HOST || 'localhost',
   port: env.SMTP_PORT || 587,
   secure: false,
