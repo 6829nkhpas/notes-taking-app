@@ -1,0 +1,45 @@
+# Cursor Rules for Notes App
+
+## Project Overview
+This is a full-stack note-taking application built with:
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS
+- **Backend**: Node.js + Express + TypeScript + MongoDB
+- **Authentication**: JWT + Google OAuth + Email OTP
+
+## Code Style
+- Use TypeScript for all new code
+- Follow React functional component patterns with hooks
+- Use Tailwind CSS for styling (mobile-first approach)
+- Implement proper error handling and validation
+- Use Zod for schema validation
+- Follow RESTful API design principles
+
+## File Structure
+```
+├── client/          # React frontend
+├── server/          # Node.js backend
+├── Dockerfile       # Multi-stage Docker build
+├── docker-compose.yml # Local development
+├── deploy-cursor.sh # Deployment script
+└── DEPLOYMENT.md    # Deployment instructions
+```
+
+## Development Guidelines
+- Test both client and server before committing
+- Use conventional commit messages
+- Ensure mobile responsiveness
+- Implement proper loading states
+- Handle authentication errors gracefully
+
+## Deployment
+- Use the `deploy-cursor.sh` script to prepare builds
+- The `dist/` folder contains production-ready files
+- Follow `DEPLOYMENT.md` for hosting instructions
+- Set proper environment variables in production
+
+## Key Features
+- User authentication (Email OTP + Google)
+- JWT-based session management
+- CRUD operations for notes
+- Mobile-first responsive design
+- Rate limiting and security measures

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { emailSchema, EmailInput } from "../schemas";
+import { signupSchema, SignupInput } from "../schemas";
 import { requestOtp } from "../api";
 import { useAuthStore } from "../useAuthStore";
 import ErrorBanner from "../../../components/ErrorBanner";
@@ -21,24 +21,21 @@ export default function Signup() {
     handleSubmit,
     formState: { errors },
     watch,
-  } = useForm<EmailInput>({
-    resolver: zodResolver(emailSchema),
+  } = useForm<SignupInput>({
+    resolver: zodResolver(signupSchema),
   });
 
-  const email = watch("email");
+  const { name, dateOfBirth, email } = watch();
 
-  const onSubmit = async (data: EmailInput) => {
+  const onSubmit = async (data: SignupInput) => {
     try {
       setIsLoading(true);
       setError(null);
       await requestOtp(data.email);
       setSuccess(true);
     } catch (error: unknown) {
-      const axiosError = error as {
-        response?: { data?: { message?: string; code?: string } };
-      };
-      const message =
-        axiosError?.response?.data?.message || "Failed to send OTP";
+      const axiosError = error as { response?: { data?: { message?: string; code?: string } } };
+      const message = axiosError?.response?.data?.message || "Failed to send OTP";
       const code = axiosError?.response?.data?.code;
       setError(`${message}${code ? ` (${code})` : ""}`);
     } finally {
@@ -99,9 +96,9 @@ export default function Signup() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create your account
+            Sign up
           </h1>
-          <p className="text-gray-600">Choose how you'd like to get started</p>
+          <p className="text-gray-600">Sign up to enjoy the feature of HD</p>
         </div>
 
         {error && (
@@ -125,15 +122,69 @@ export default function Signup() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="mb-4">
               <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Your Name <span className="text-red-500 ml-1">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                {...register("name")}
+                className={`form-input ${
+                  errors.name ? "border-red-500 focus:ring-red-500" : ""
+                }`}
+                required
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label
+                htmlFor="dateOfBirth"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Date of Birth <span className="text-red-500 ml-1">*</span>
+              </label>
+              <div className="relative">
+                <input
+                  id="dateOfBirth"
+                  type="date"
+                  {...register("dateOfBirth")}
+                  className={`form-input pl-10 ${
+                    errors.dateOfBirth ? "border-red-500 focus:ring-red-500" : ""
+                  }`}
+                  required
+                />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              {errors.dateOfBirth && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.dateOfBirth.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email address <span className="text-red-500 ml-1">*</span>
+                Email <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter your email address"
                 {...register("email")}
                 className={`form-input ${
                   errors.email ? "border-red-500 focus:ring-red-500" : ""
@@ -154,7 +205,7 @@ export default function Signup() {
                   Sending OTP...
                 </div>
               ) : (
-                "Send verification code"
+                "Get OTP"
               )}
             </button>
           </form>
@@ -162,7 +213,7 @@ export default function Signup() {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{" "}
+            Already have an account??{" "}
             <button
               onClick={() => navigate("/login")}
               className="text-blue-600 hover:text-blue-700 font-medium underline"

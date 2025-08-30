@@ -25,49 +25,55 @@ export default function Welcome() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center pt-16 pb-24 px-4">
-      <div className="max-w-md w-full text-center">
-        <div className="mb-8">
-          <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <svg
-              className="w-10 h-10 text-blue-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-          </div>
-
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user.name || "User"}!
-          </h1>
-
-          <p className="text-gray-600 mb-6">
-            You're signed in as <strong>{user.email}</strong>
+    <div className="min-h-screen pt-20 pb-24 px-4">
+      <div className="container max-w-4xl mx-auto">
+        {/* Welcome Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Welcome, {user.name || "User"} !
+          </h2>
+          <p className="text-gray-600">
+            Email: {user.email}
           </p>
-
-          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-            {user.provider === "google" ? "Google Account" : "Email + OTP"}
-          </div>
         </div>
 
-        <div className="space-y-4">
-          <button onClick={() => navigate("/notes")} className="form-button">
-            Go to Notes
-          </button>
-
+        {/* Create Note Button */}
+        <div className="text-center mb-8">
           <button
-            onClick={() => navigate("/signup")}
-            className="w-full px-6 py-2 text-gray-600 hover:text-gray-900 underline"
+            onClick={() => navigate("/notes")}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
           >
-            Sign in with different account
+            Create Note
           </button>
+        </div>
+
+        {/* Notes Section */}
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Notes</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Sample Notes - these would be replaced with actual notes */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-start justify-between">
+                <h3 className="font-semibold text-gray-900">Note 1</h3>
+                <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-start justify-between">
+                <h3 className="font-semibold text-gray-900">Note 2</h3>
+                <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

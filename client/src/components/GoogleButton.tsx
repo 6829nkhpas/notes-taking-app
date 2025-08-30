@@ -9,8 +9,14 @@ declare global {
     google?: {
       accounts: {
         id: {
-          initialize: (config: any) => void;
-          renderButton: (element: HTMLElement, options: any) => void;
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+          }) => void;
+          renderButton: (
+            element: HTMLElement,
+            options: Record<string, unknown>
+          ) => void;
           prompt: () => void;
         };
       };
@@ -33,7 +39,7 @@ export default function GoogleButton() {
   const maxRetries = 3;
 
   const handleCredentialResponse = useCallback(
-    async (response: any) => {
+    async (response: { credential: string }) => {
       if (!mountedRef.current) return;
 
       try {
@@ -42,9 +48,13 @@ export default function GoogleButton() {
         setUser(result.data.data.user);
         setError(null);
         navigate("/welcome");
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const axiosError = error as {
+          response?: { data?: { message?: string } };
+        };
         setError(
-          error.response?.data?.message || "Google login failed. Please try again."
+          axiosError?.response?.data?.message ||
+            "Google login failed. Please try again."
         );
       } finally {
         if (mountedRef.current) setIsLoading(false);
@@ -61,7 +71,10 @@ export default function GoogleButton() {
       if (!google?.accounts?.id) {
         if (retryCount.current < maxRetries) {
           retryCount.current += 1;
-          setTimeout(() => initializeGoogleAuth(clientId), 1000 * retryCount.current);
+          setTimeout(
+            () => initializeGoogleAuth(clientId),
+            1000 * retryCount.current
+          );
         } else {
           setGoogleError("Google authentication service is not available.");
           setIsLoading(false);
@@ -87,7 +100,7 @@ export default function GoogleButton() {
           setInitialized(true);
           setIsLoading(false);
         }
-      } catch (err) {
+      } catch {
         setGoogleError("Failed to initialize Google authentication.");
         setIsLoading(false);
       }
@@ -117,7 +130,9 @@ export default function GoogleButton() {
       script.defer = true;
       script.onload = () => initializeGoogleAuth(clientId);
       script.onerror = () => {
-        setGoogleError("Failed to load Google authentication. Please try again later.");
+        setGoogleError(
+          "Failed to load Google authentication. Please try again later."
+        );
         setIsLoading(false);
       };
 
