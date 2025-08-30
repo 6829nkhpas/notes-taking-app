@@ -16,7 +16,9 @@ A production-style, mobile-first note-taking application with Email+OTP and Goog
 - MongoDB instance (local or Atlas)
 - Google OAuth credentials (for Google login)
 
-### Backend (Server)
+### Local Development
+
+#### Backend (Server)
 ```bash
 cd server
 cp .env.example .env
@@ -27,7 +29,7 @@ npm run dev
 
 The server will start on http://localhost:4000
 
-### Frontend (Client)
+#### Frontend (Client)
 ```bash
 cd client
 cp .env.example .env
@@ -63,6 +65,19 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 curl http://localhost:4000/api/health
 ```
 
+## 🚀 Deployment
+
+### Frontend (Vercel)
+1. Run the deployment script: `./deploy-vercel.sh`
+2. Go to [vercel.com](https://vercel.com)
+3. Import your GitHub repository
+4. Deploy automatically
+
+### Backend (Render/Railway)
+1. Follow [BACKEND-DEPLOYMENT.md](BACKEND-DEPLOYMENT.md)
+2. Deploy to Render (free) or Railway
+3. Update frontend environment variables
+
 ## Tech Stack
 
 - **Backend**: Node.js, Express, TypeScript, MongoDB, Mongoose
@@ -70,3 +85,10 @@ curl http://localhost:4000/api/health
 - **Authentication**: JWT, Google OAuth, Email OTP
 - **State Management**: Zustand
 - **Validation**: Zod
+
+## 📱 UI Features
+
+- **Signup Form**: Name, Date of Birth, Email fields
+- **Dashboard**: Welcome card, create note button, notes list
+- **Mobile-First**: Responsive design for all devices
+- **Modern UI**: Clean, intuitive interface with Tailwind CSS

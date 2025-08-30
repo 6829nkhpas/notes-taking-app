@@ -34,8 +34,11 @@ export default function Login() {
       await requestOtp(data.email);
       setSuccess(true);
     } catch (error: unknown) {
-      const axiosError = error as { response?: { data?: { message?: string; code?: string } } };
-      const message = axiosError?.response?.data?.message || "Failed to send OTP";
+      const axiosError = error as {
+        response?: { data?: { message?: string; code?: string } };
+      };
+      const message =
+        axiosError?.response?.data?.message || "Failed to send OTP";
       const code = axiosError?.response?.data?.code;
       setError(`${message}${code ? ` (${code})` : ""}`);
     } finally {
