@@ -4,6 +4,20 @@ import { googleLogin } from "../features/auth/api";
 import { useAuthStore } from "../features/auth/useAuthStore";
 import { GOOGLE_CLIENT_ID } from "../config";
 
+// Google API types
+interface GoogleAccounts {
+  id: {
+    initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
+    renderButton: (element: HTMLElement, options: any) => void;
+  };
+}
+
+interface WindowWithGoogle extends Window {
+  google?: GoogleAccounts;
+}
+
+declare const window: WindowWithGoogle;
+
 export default function GoogleButton() {
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -114,7 +128,7 @@ export default function GoogleButton() {
       // Only render if the ref is still available and component is mounted
       if (ref.current && isMounted) {
         console.log("GoogleButton: Rendering button...");
-        
+
         // Clear any existing buttons first
         while (ref.current.firstChild) {
           ref.current.removeChild(ref.current.firstChild);

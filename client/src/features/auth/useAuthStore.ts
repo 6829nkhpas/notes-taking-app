@@ -24,7 +24,7 @@ interface AuthActions {
 
 type AuthStore = AuthState & AuthActions;
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
+export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
   loading: false,
   error: null,
@@ -39,9 +39,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       set({ loading: true, error: null });
       const response = await me();
       set({ user: response.data.data.user, loading: false });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
       set({ 
-        error: error.response?.data?.message || 'Failed to fetch user', 
+        error: axiosError?.response?.data?.message || 'Failed to fetch user', 
         loading: false 
       });
     }
