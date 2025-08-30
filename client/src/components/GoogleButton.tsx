@@ -1,158 +1,133 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { googleLogin } from "../features/auth/api";
 import { useAuthStore } from "../features/auth/useAuthStore";
 import { GOOGLE_CLIENT_ID } from "../config";
 
-// Google API types
-interface GoogleAccounts {
-  id: {
-    initialize: (config: { client_id: string; callback: (response: { credential: string }) => void }) => void;
-    renderButton: (element: HTMLElement, options: any) => void;
-  };
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          renderButton: (element: HTMLElement, options: any) => void;
+          prompt: () => void;
+        };
+      };
+    };
+  }
 }
-
-interface WindowWithGoogle extends Window {
-  google?: GoogleAccounts;
-}
-
-declare const window: WindowWithGoogle;
 
 export default function GoogleButton() {
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const setUser = useAuthStore((s) => s.setUser);
   const setError = useAuthStore((s) => s.setError);
-  const [isLoading, setIsLoading] = useState(true);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const scriptLoaded = useRef(false);
+  const mountedRef = useRef(true);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
 
-  // Set mounted state
+  const handleCredentialResponse = useCallback(
+    async (response: any) => {
+      if (!mountedRef.current) return;
+
+      try {
+        setIsLoading(true);
+        const result = await googleLogin(response.credential);
+        setUser(result.data.data.user);
+        setError(null);
+        navigate("/welcome");
+      } catch (error: any) {
+        setError(
+          error.response?.data?.message || "Google login failed. Please try again."
+        );
+      } finally {
+        if (mountedRef.current) setIsLoading(false);
+      }
+    },
+    [navigate, setError, setUser]
+  );
+
+  const initializeGoogleAuth = useCallback(
+    (clientId: string) => {
+      if (!mountedRef.current || initialized) return;
+
+      const google = window.google;
+      if (!google?.accounts?.id) {
+        if (retryCount.current < maxRetries) {
+          retryCount.current += 1;
+          setTimeout(() => initializeGoogleAuth(clientId), 1000 * retryCount.current);
+        } else {
+          setGoogleError("Google authentication service is not available.");
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      try {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleCredentialResponse,
+        });
+
+        if (ref.current && mountedRef.current) {
+          ref.current.innerHTML = "";
+          google.accounts.id.renderButton(ref.current, {
+            type: "standard",
+            size: "large",
+            shape: "pill",
+            text: "continue_with",
+            theme: "outline",
+          });
+          setInitialized(true);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        setGoogleError("Failed to initialize Google authentication.");
+        setIsLoading(false);
+      }
+    },
+    [handleCredentialResponse, initialized]
+  );
+
   useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
+    mountedRef.current = true;
     const clientId = GOOGLE_CLIENT_ID;
 
     if (!clientId) {
-      console.error("GoogleButton: Missing Google Client ID");
       setGoogleError("Google authentication is not configured properly.");
       setIsLoading(false);
       return;
     }
 
-    // Check if Google script is already loaded
-    if ((window as any).google) {
+    if (window.google?.accounts?.id) {
       initializeGoogleAuth(clientId);
-      return;
+    } else if (!scriptLoaded.current) {
+      scriptLoaded.current = true;
+
+      const script = document.createElement("script");
+      script.id = "google-client-script";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => initializeGoogleAuth(clientId);
+      script.onerror = () => {
+        setGoogleError("Failed to load Google authentication. Please try again later.");
+        setIsLoading(false);
+      };
+
+      document.body.appendChild(script);
     }
-
-    // Load Google script if not already loaded
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => initializeGoogleAuth(clientId);
-    script.onerror = () => {
-      console.error("Failed to load Google script");
-      setGoogleError(
-        "Failed to load Google authentication. Please try again later."
-      );
-      setIsLoading(false);
-    };
-
-    document.body.appendChild(script);
 
     return () => {
-      // Cleanup
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
+      mountedRef.current = false;
     };
-  }, [isMounted]);
-
-  const initializeGoogleAuth = (clientId: string) => {
-    try {
-      if (!isMounted) return;
-
-      console.log("Initializing Google Auth with clientId:", clientId);
-      console.log("Google object available:", !!(window as any).google);
-      console.log("Ref current:", !!ref.current);
-      console.log("Component mounted:", isMounted);
-
-      if (!ref.current) {
-        console.log("GoogleButton: Ref not available, waiting...");
-        setTimeout(() => initializeGoogleAuth(clientId), 50);
-        return;
-      }
-
-      const google = (window as any).google;
-
-      if (!google || !google.accounts || !google.accounts.id) {
-        const errorMsg =
-          "Google authentication API is not available. Make sure the Google script is loaded correctly.";
-        console.error("GoogleButton:", errorMsg, { google });
-        setGoogleError(
-          "Google authentication service is not available. Please try email signup."
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response: any) => {
-          console.log("Google auth callback received response:", !!response);
-          try {
-            setIsLoading(true);
-            const result = await googleLogin(response.credential);
-            setUser(result.data.data.user);
-            setError(null);
-            navigate("/welcome");
-          } catch (error: any) {
-            console.error("Google login failed:", error);
-            setError(
-              error.response?.data?.message ||
-                "Google login failed. Please try again."
-            );
-          } finally {
-            setIsLoading(false);
-          }
-        },
-      });
-
-      // Only render if the ref is still available and component is mounted
-      if (ref.current && isMounted) {
-        console.log("GoogleButton: Rendering button...");
-
-        // Clear any existing buttons first
-        while (ref.current.firstChild) {
-          ref.current.removeChild(ref.current.firstChild);
-        }
-
-        google.accounts.id.renderButton(ref.current, {
-          type: "standard",
-          size: "large",
-          shape: "pill",
-          text: "continue_with",
-          theme: "outline",
-        });
-
-        // Add a small delay before hiding the loader to ensure smooth transition
-        setTimeout(() => setIsLoading(false), 100);
-      }
-    } catch (error) {
-      console.error("Error initializing Google Auth:", error);
-      setGoogleError(
-        "Failed to initialize Google authentication. Please try email signup."
-      );
-      setIsLoading(false);
-    }
-  };
+  }, [initializeGoogleAuth]);
 
   if (isLoading) {
     return (
