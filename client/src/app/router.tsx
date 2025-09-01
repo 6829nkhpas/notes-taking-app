@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { useAuthStore } from "../features/auth/useAuthStore";
+import { useEffect } from "react";
 import Signup from "../features/auth/pages/Signup";
 import VerifyOtp from "../features/auth/pages/VerifyOtp";
 import Login from "../features/auth/pages/Login";
@@ -8,6 +9,18 @@ import Notes from "../features/notes/pages/Notes";
 import Navbar from "../components/Navbar";
 
 function Layout() {
+  const { user, fetchMe } = useAuthStore();
+
+  useEffect(() => {
+    // If no user is loaded, try to fetch user data from the server
+    if (!user) {
+      fetchMe().catch(() => {
+        // Silently fail if user is not authenticated
+        // This will redirect to signup via Protected component
+      });
+    }
+  }, [user, fetchMe]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

@@ -12,7 +12,7 @@ export class OTPService {
     return bcrypt.hash(otp, 10);
   }
 
-  private static async verifyOTP(otp: string, hash: string): Promise<boolean> {
+  private static async compareOTP(otp: string, hash: string): Promise<boolean> {
     return bcrypt.compare(otp, hash);
   }
 
@@ -53,7 +53,7 @@ export class OTPService {
     }
 
     // Verify OTP
-    const isValid = await this.verifyOTP(otp, otpRecord.codeHash);
+    const isValid = await this.compareOTP(otp, otpRecord.codeHash);
     
     if (!isValid) {
       // Increment attempts

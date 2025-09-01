@@ -46,6 +46,12 @@ export default function GoogleButton() {
         setIsLoading(true);
         const result = await googleLogin(response.credential);
         setUser(result.data.data.user);
+
+        // Store token in localStorage as fallback
+        if (result.data.data.token) {
+          localStorage.setItem("access_token", result.data.data.token);
+        }
+
         setError(null);
         navigate("/welcome");
       } catch (error: unknown) {
